@@ -66,6 +66,6 @@ COMMENT = '{"origin":"sf_sit", "name":"Dynamic Route Optimisation Streamlit app"
 
 Now you have a configure streamlit and notebook, you can start the lab.
 
-- Navigate to the Routing_demo_setup notebook and follow the instructions inside
+- Navigate to the **ROUTING_DEMO_SETUP** notebook and follow the instructions inside
 
 - when complete navigate to the vehicle routing optimisation simulation app
