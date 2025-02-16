@@ -198,6 +198,5 @@ The solution leverages pydeck to plot points, linestrings and polygons on a map.
 #### Considerations
 The Job details may plot routes outside the agreed time.  The Demo has only vehicles where each vehicle has a unique skill.  We will need more vehicles / less skills to prevent these violations.
 
-The vehicle directions sometimes misses some of the way points - you will see some points in isolation.  This is something that needs further investigation as to why this happens.
 
 
