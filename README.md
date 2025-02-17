@@ -1,5 +1,7 @@
 # Create-a-Route-Optimisation-and-Vehicle-Route-Plan-Simulator
 
+## Overview
+
 This tutorial leverages the [Open Route Service](https://openrouteservice.org/) to optimise vehicle routes in order to distribute goods to chosen destinations on time.
 
 The results are flexible in terms of location - you can choose to simulate routes from anywhere in the world.
@@ -12,7 +14,8 @@ https://openrouteservice.org/plans/
 
 Either way, Snowflake allows for creation of a fully interactive route simulator which will benefit many vehicle centric industries such as **retail**, **distribution**, **healthcare** and more.
 
-# Setup
+## Setup
+
 ### Create Database and Warehouse
 
 ```sql
@@ -67,7 +70,7 @@ COMMENT = '{"origin":"sf_sit", "name":"Dynamic Route Optimisation Streamlit app"
 
 ```
 
-### Begin the notebook setup and tutorial
+## Begin the notebook tutorial which includes pre-configuration for the simulator app
 
 Now you have a configured streamlit and notebook, you can begin the lab.
 
@@ -75,7 +78,7 @@ Now you have a configured streamlit and notebook, you can begin the lab.
 
 - When you have completed the Notebook, navigate to the streamlit area (within projects) and open the vehicle routing optimisation simulation app
 
-# DYNAMIC OPTIMISATION SIMULATION STREAMLIT APP
+## Run the Dynamic route Optimisation and Vehicle Route Plan Simulator
 
 ![alt text](img/simulator_image.png)
 
