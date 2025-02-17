@@ -19,6 +19,9 @@ Either way, Snowflake allows for creation of a fully interactive route simulator
 
 CREATE DATABASE IF NOT EXISTS VEHICLE_ROUTING_SIMULATOR;
 CREATE WAREHOUSE IF NOT EXISTS ROUTING_ANALYTICS;
+
+CREATE SCHEMA IF NOT EXISTS UTILS;
+CREATE SCHEMA IF NOT EXISTS ROUTING;
 ```
 
 Create 2 stages, one for the notebook, and the other for the Streamlit
