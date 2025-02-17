@@ -95,7 +95,7 @@ The places you will work with are real as they are based on the Carto Overture p
 ![alt text](img/Overview_Diagram.png)
 
 
-## Setting the Context of the Routing Scenario
+### Setting the Context of the Routing Scenario
 
 - Open up the side menu
 - Select the industry type.
@@ -121,7 +121,7 @@ The places you will work with are real as they are based on the Carto Overture p
 
 - You may close the side bar.
 
-## Wholesaler Routing Walkthrough.
+### Wholesaler Routing Walkthrough.
 
 This is an example scenario based on the previously selected fields.
 
@@ -170,7 +170,7 @@ Tabs - this will give instructions for each segment of the drivers journey - the
 ![alt text](img/vehicle_itenary.png)
 
 
-## How does it work
+### How does it work
 
 You can see that in a couple of clicks you can create a vehicle optimisation scenario from anywhere.
 
