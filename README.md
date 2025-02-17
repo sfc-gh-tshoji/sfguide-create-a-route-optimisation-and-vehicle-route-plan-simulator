@@ -22,11 +22,13 @@ CREATE WAREHOUSE IF NOT EXISTS ROUTING_ANALYTICS;
 
 CREATE SCHEMA IF NOT EXISTS UTILS;
 CREATE SCHEMA IF NOT EXISTS ROUTING;
-```
 
-Create 2 stages, one for the notebook, and the other for the Streamlit
+--- Use this to gain access to LLM functions if your snowflake region does not support them.
 
-```sql
+ALTER ACCOUNT SET CORTEX_ENABLED_CROSS_REGION = 'ANY_REGION';
+
+--- Create 2 stages, one for the notebook, and the other for the Streamlit application
+
  CREATE STAGE IF NOT EXISTS VEHICLE_ROUTING_SIMULATOR.routing.notebook DIRECTORY = (ENABLE = TRUE) ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE');
 
  CREATE STAGE IF NOT EXISTS VEHICLE_ROUTING_SIMULATOR.routing.streamlit DIRECTORY = (ENABLE = TRUE) ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE');
@@ -65,13 +67,13 @@ COMMENT = '{"origin":"sf_sit", "name":"Dynamic Route Optimisation Streamlit app"
 
 ```
 
-### Begin the tutorial
+### Begin the notebook setup and tutorial
 
-Now you have a configure streamlit and notebook, you can start the lab.
+Now you have a configured streamlit and notebook, you can begin the lab.
 
-- Navigate to the **ROUTING_DEMO_SETUP** notebook and follow the instructions inside
+- Within the notebook area in Snowsight, navigate to the **ROUTING_DEMO_SETUP** notebook and follow the instructions inside
 
-- when complete navigate to the vehicle routing optimisation simulation app
+- When you have completed the Notebook, navigate to the streamlit area (within projects) and open the vehicle routing optimisation simulation app
 
 # DYNAMIC OPTIMISATION SIMULATION STREAMLIT APP
 
