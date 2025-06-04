@@ -1,7 +1,7 @@
 # Import python packages
 import altair as alt
 
-import streamlit as st
+import streamlit as st col('PROFILE'),object_construct(lit('coordinates'),col('LINE'))).alias('DIRECTIONS')).cache_result()
 from snowflake.snowpark.context import get_active_session
 import requests
 from snowflake.snowpark.functions import *
