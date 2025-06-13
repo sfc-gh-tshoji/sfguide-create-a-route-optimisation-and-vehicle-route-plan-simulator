@@ -402,7 +402,7 @@ else:
 isochrone = session.create_dataframe([{'LON':start_1[0], 'LAT':start_1[1], 'METHOD': based_on,'RANGE_MINS':range_minutes}])
         #st.write(isochrone)
         
-isochrone = isochrone.select(call_function('OPEN_ROUTE_SERVICE_V2.CORE.ISOCHRONES',
+isochrone = isochrone.select(call_function('OPENROUTESERVICE_SPCS.CORE.ISOCHRONES',
                           (col('METHOD'), col('LON'), col('LAT'), col('RANGE_MINS'))).alias('ISOCHRONE'))
     
        
@@ -503,7 +503,7 @@ if submit:
 
         ######## use function to optimise
     
-        optim = jobs.join(vehs).select('JOB','VEH',call_function('OPEN_ROUTE_SERVICE_V2.CORE.OPTIMIZATION',
+        optim = jobs.join(vehs).select('JOB','VEH',call_function('OPENROUTESERVICE_SPCS.CORE.OPTIMIZATION',
                                                              col('JOB'),col('VEH')).alias('OPTIMIZATION'))
 
 
@@ -618,7 +618,7 @@ if submit:
     
         optim_line = optim_line\
         .select('VEHICLE','R','G','B','PROFILE','ID','TOTAL_JOBS',
-            call_function('OPEN_ROUTE_SERVICE_V2.CORE.DIRECTIONS',
+            call_function('OPENROUTESERVICE_SPCS.CORE.DIRECTIONS',
                                     col('PROFILE'),object_construct(lit('coordinates'),col('LINE'))).alias('DIRECTIONS')).cache_result()
 
     
