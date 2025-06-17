@@ -1,0 +1,27 @@
+spec:
+  containers:
+    - name: ors
+      image: /openrouteservice_setup/public/image_repository/openrouteservice:v9.0.0
+      volumeMounts:
+        - name: files
+          mountPath: /home/ors/files
+        - name: graphs
+          mountPath: /home/ors/graphs
+        - name: elevation-cache
+          mountPath: /home/ors/elevation_cache
+      env:
+        REBUILD_GRAPHS: false
+        ORS_CONFIG_LOCATION: /home/ors/files/ors-config.yml
+        XMS: 1G 
+        XMX: 10G
+  endpoints:
+    - name: ors
+      port: 8082
+      public: false
+  volumes:
+    - name: files
+      source: "@core.ORS_SPCS_STAGE"
+    - name: graphs
+      source: "@core.ORS_GRAPHS_SPCS_STAGE"
+    - name: elevation-cache
+      source: "@core.ORS_elevation_cache_SPCS_STAGE"
