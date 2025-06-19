@@ -10,7 +10,7 @@ For more background, please refer to the Medium article.
 1. **Environment Setup:** In Snowsight execute `provider_setup/env_setup.sql` to create database, image repository and other Snowflake objects.
 2. **Snowflake CLI Connection:** Create a Snowflake CLI connection following the [tutorial](https://docs.snowflake.com/en/developer-guide/native-apps/tutorials/getting-started-tutorial#create-a-snowflake-cli-connection-for-the-tutorial). 
 3. **Upload Map and Configuration File:** Upload the map file (`SanFrancisco.osm.pbf` or your custom `.osm.pbf` map) and `ors-config.yaml` file to the internal stage `ors_spcs_stage` created in Step 1. Refresh stage metadata after uploading the map via UI or via code `ALTER STAGE REFRESH CORE.ORS_SPCS_STAGE REFRESH;`
-* You can use the example files: `SanFrancisco.osm.pbf` and `ors-config.yaml` located in `provider_setup/staged_files`. The San Francisco map uploaded to the repository originates from [geofabrik](download.geofabrik.de). This website provides a wide selection of maps.
+* You can use the example files: `SanFrancisco.osm.pbf` and `ors-config.yaml` located in `provider_setup/staged_files`. The San Francisco map uploaded to the repository originates from [geofabrik](https://download.geofabrik.de). This website provides a wide selection of maps.
 * If using a custom map, ensure the `source_file` field within `ors-config.yml` is updated to reflect the new map filename. 
 * **Map Upload Methods**:
   * For maps **below 250MB**: upload using the [web interface](https://docs.snowflake.com/en/user-guide/data-load-web-ui)
