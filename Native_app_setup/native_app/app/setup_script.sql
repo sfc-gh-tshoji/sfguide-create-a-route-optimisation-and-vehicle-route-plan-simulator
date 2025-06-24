@@ -1,5 +1,4 @@
 CREATE APPLICATION ROLE IF NOT EXISTS app_user;
-
 CREATE SCHEMA IF NOT EXISTS core;
 GRANT USAGE ON SCHEMA core TO APPLICATION ROLE app_user;
 
@@ -37,9 +36,9 @@ BEGIN
    LET pool_name := (SELECT CURRENT_DATABASE()) || '_compute_pool';
 
    CREATE COMPUTE POOL IF NOT EXISTS IDENTIFIER(:pool_name)
-      MIN_NODES = 1
-      MAX_NODES = 1
-      INSTANCE_FAMILY = CPU_X64_S
+      INSTANCE_FAMILY = CPU_X64_M
+      MIN_NODES = 2
+      MAX_NODES = 10
       AUTO_RESUME = true;
 
    RETURN 'Compute Pool Created Successfully';
@@ -128,16 +127,22 @@ BEGIN
    CREATE SERVICE IF NOT EXISTS core.ors_service
       IN COMPUTE POOL identifier(:pool_name)
       FROM spec='services/openrouteservice/openrouteservice.yaml'
+      MIN_INSTANCES = 2
+      MAX_INSTANCES = 10
       AUTO_SUSPEND_SECS = 14400;
 
    CREATE SERVICE IF NOT EXISTS core.vroom_service
       IN COMPUTE POOL identifier(:pool_name)
       FROM spec='services/vroom/vroom-service.yaml'
+      MIN_INSTANCES = 2
+      MAX_INSTANCES = 10
       AUTO_SUSPEND_SECS = 14400;
 
    CREATE SERVICE IF NOT EXISTS core.routing_gateway_service
       IN COMPUTE POOL identifier(:pool_name)
       FROM spec='services/gateway/routing-gateway-service.yaml'
+      MIN_INSTANCES = 2
+      MAX_INSTANCES = 10
       AUTO_SUSPEND_SECS = 14400;
 
    GRANT OPERATE ON SERVICE core.ors_service TO APPLICATION ROLE app_user;
