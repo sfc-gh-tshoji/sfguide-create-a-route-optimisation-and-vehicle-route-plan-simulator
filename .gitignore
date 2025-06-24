@@ -1,0 +1,5 @@
+# Ignore DS_Store
+.DS_Store
+
+# Ignore the 'output' folder
+/native_app_setup/native_app/output
