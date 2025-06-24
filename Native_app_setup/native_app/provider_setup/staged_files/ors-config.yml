@@ -9,7 +9,7 @@ ors:
         source_file: /home/ors/files/SanFrancisco.osm.pbf
         instructions: false
         service:
-        maximum_visited_nodes: 100000000
+        maximum_visited_nodes: 10000000000
     profiles:
       driving-car:
         enabled: true
@@ -19,7 +19,7 @@ ors:
         enabled: true
   endpoints:
     matrix:
-      maximum_visited_nodes: 10000000
+      maximum_visited_nodes: 1000000000
 #        maximum_distance: 100000
 #        maximum_distance_dynamic_weights: 100000
 #        maximum_distance_avoid_areas: 100000
