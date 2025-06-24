@@ -1,5 +1,5 @@
 # OPENROUTESERVICE SNOWFLAKE NATIVE APP
-For more background, please refer to the Medium article.
+For more background, please refer to the [Medium article](https://medium.com/p/c471e187a991).
 
 ## Prerequisites
 - Snowflake Account: Please note that trial accounts are not supported.
@@ -17,8 +17,8 @@ For more background, please refer to the Medium article.
   * For maps **below 5GB**: use [snow stage copy](https://docs.snowflake.com/en/developer-guide/snowflake-cli/command-reference/stage-commands/copy) or [PUT](https://docs.snowflake.com/en/sql-reference/sql/put) command.
   * For maps **above 5GB**: load them into cloud storage bucket (e.g.,S3), create an external stage, and then copy them into the internal stage using [copy files](https://docs.snowflake.com/en/sql-reference/sql/copy-files) command.
 
-4. **Image Loading:** From your project's working directory `../native_app`, execute the terminal script `provider_setup/spcs_setup.sh`. Update `<CONNECTION_NAME>` with the name of the connection you created in Step 2. This script will load the necessary images into the image repository.
-5. **Application Installation:** From your project's working directory, execute snowflake CLI command: `snow app run -c <CONNECTION_NAME>`. Afterwards, in Snowsight, in the navigation bar on the left, click **Data Products >> Apps**. Select the application, grant it the required privileges via the UI and activate it via button in upper right corner. Launching it for the first time might take a minute or two.
+4. **Image Loading:** Update in the file `provider_setup/spcs_setup.sh` field `<CONNECTION_NAME>` with the name of the connection you created in Step 2. Then from your project working directory (`/native_app`), execute this script in terminal via command `./provider_setup/spcs_setup.sh`. It will load the necessary images into the image repository. If you face issues with permissions, execute `chmod +x ./provider_setup/spcs_setup.sh`. You must have docker desktop running in the background.
+5. **Application Installation:** From your project working directory (`/native_app`), execute snowflake CLI command in terminal: `snow app run -c <CONNECTION_NAME>`. Afterwards, in Snowsight, in the navigation bar on the left, click **Data Products >> Apps**. Select the application, grant it the required privileges via the UI and activate it via button in upper right corner. Launching it for the first time might take a minute or two.
 6. **API Testing Examples:**
 After launching the application you will see a simple streamlit app containing examples how to test the APIs.
 
