@@ -1,4 +1,4 @@
-# Import python packages
+# Pythonパッケージをインポート
 import altair as alt
 import streamlit as st
 from snowflake.snowpark.context import get_active_session
@@ -10,24 +10,24 @@ import pydeck as pdk
 import json
 from snowflake.snowpark.window import Window
 
-# Initialize Snowflake session and Streamlit page config
+# SnowflakeセッションとStreamlitページ設定を初期化
 session = get_active_session()
 st.set_page_config(layout="wide")
 
-# Load custom CSS
-with open('extra.css') as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+# # カスタムCSSを読み込み
+# with open('extra.css') as f:
+#     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-# Set sidebar logo
+# サイドバーロゴを設定
 st.logo('logo.svg')
 
-# Industry lookup
+# 業界の参照テーブル
 lookup_table = session.table('DATA.LOOKUP')
 industry_choices = lookup_table.select('INDUSTRY').to_pandas()['INDUSTRY'].tolist()
 
 with st.sidebar:
-    route_functions_option = st.radio('Where are the routing functions', ['OPENROUTESERVICE_NATIVE_APP', 'VEHICLE_ROUTING_SIMULATOR'])
-    selected_industry = st.radio('Select Industry', industry_choices)
+    route_functions_option = st.radio('ルーティング関数の処理場所を選択', ['OPENROUTESERVICE_NATIVE_APP', 'VEHICLE_ROUTING_SIMULATOR'])
+    selected_industry = st.radio('業界を選択', industry_choices)
 
     filtered_lookup = lookup_table.filter(col('INDUSTRY') == selected_industry)
     filtered_lookup = filtered_lookup.with_column('IND', array_to_string('IND', lit(',')))
@@ -35,7 +35,7 @@ with st.sidebar:
 
     lookup_pandas = filtered_lookup.to_pandas()
 
-    # Extract industry-specific parameters
+    # 業界固有のパラメータを抽出
     pa_val = lookup_pandas.PA.iloc[0]
     pb_val = lookup_pandas.PB.iloc[0]
     pc_val = lookup_pandas.PC.iloc[0]
@@ -44,16 +44,16 @@ with st.sidebar:
     customer_types = json.loads(lookup_pandas.CTYPE.iloc[0])
     skill_types = json.loads(lookup_pandas.STYPE.iloc[0])
 
-# Main application header
+# メインアプリケーションヘッダー
 st.markdown('''
-<h0black>ROUTE OPTIMISATION |</h0black><h0blue> SIMULATION</h0blue><BR>
+<h0black>ルート最適化 |</h0black><h0blue> シミュレーション</h0blue><BR>
 <h1grey>Powered by the Open Route Service Native App</h1grey>
 ''', unsafe_allow_html=True)
 
-# Define routing methods
+# ルーティングする配送方法を定義
 methods = ['driving-car', 'driving-hgv', 'cycling-road']
 
-# Load points of interest data
+# 関心地点データを読み込み
 places_filtered = session.table('DATA.places')
 places_filtered = places_filtered.select(
     'GEOMETRY',
@@ -67,19 +67,19 @@ places_filtered = places_filtered.select(
     col('GEOMETRY').alias('POINT')
 )
 
-# Cortex powered map filter in sidebar
+# サイドバーのCortex対応マップフィルター
 with st.sidebar:
-    st.markdown('##### Cortex Powered Map Filter')
-    st.info('Give me the LAT and LON which centers the following place')
-    model_choice = st.selectbox('Choose Model:', ['reka-flash', 'mistral-large2', 'claude-4-sonnet'], 2)
-    place_input = st.text_input('Choose Input', 'The Empire State Building, New York')
-    distance_input = st.number_input('Distance from location in KM', 1, 300, 15)
+    st.markdown('##### Cortex対応マップフィルター')
+    st.info('以下の場所を中心とする緯度と経度を教えてください')
+    model_choice = st.selectbox('モデルを選択:', ['reka-flash', 'mistral-large2', 'claude-4-sonnet'], 2)
+    place_input = st.text_input('入力', 'The Empire State Building, New York')
+    distance_input = st.number_input('距離（KM）', 1, 300, 15)
 
 @st.cache_data
 def get_cortex_place_data(place, model, distance):
     """
-    Uses Cortex to find geographical coordinates for a given place.
-    Caches the results to minimize API calls.
+    Cortexを使用して指定された場所の地理座標を検索します。
+    API呼び出しを最小化するために結果をキャッシュします。
     """
     json_template = str({'LAT': 44.3452, 'LON': 2.345, 'DISTANCE': 100})
     cortex_response = session.create_dataframe([{'PLACE': place}]) \
@@ -121,16 +121,16 @@ with st.sidebar:
     )
     st.divider()
 
-# Filter places for wholesalers based on Cortex input
+# Cortex入力に基づいて卸売業者の場所をフィルタリング
 places_wholesalers = places_filtered.filter(
     call_function('ST_DWITHIN', places_filtered['GEOMETRY'], to_geography(lit(bbox_data.POINT.iloc[0])), lit(bbox_data.DISTANCE1.iloc[0]) * 1000)
 )
 
-# Search across categories and alternate fields for specified industries
+# 指定された業界のカテゴリおよび代替フィールドを検索
 places_1 = places_wholesalers.filter(expr(f'''search((CATEGORY,ALTERNATE,NAME),'{ind_val}',analyzer=>'DEFAULT_ANALYZER')'''))
 places_1 = places_1.filter(expr(f'''search((CATEGORY,ALTERNATE,NAME),'{ind2_val}',analyzer=>'DEFAULT_ANALYZER')''')).cache_result()
 
-# Customize job template based on industry selection
+# 業界選択に基づいてジョブテンプレートをカスタマイズ
 time_slots = session.table('DATA.JOB_TEMPLATE')
 pa_slots = time_slots.filter(col('PRODUCT') == 'pa').join(filtered_lookup.select('PA'))
 pb_slots = time_slots.filter(col('PRODUCT') == 'pb').join(filtered_lookup.select('PB'))
@@ -138,9 +138,9 @@ pc_slots = time_slots.filter(col('PRODUCT') == 'pc').join(filtered_lookup.select
 
 time_slots_union = pa_slots.union(pb_slots).union(pc_slots).with_column('PRODUCT', col('PA')).drop('PA')
 
-# Handle case where no places are found within the selected point
+# 選択されたポイント内に場所が見つからない場合の処理
 if places_1.to_pandas().empty:
-    st.info(f'No {ind_val} found within the specified area.')
+    st.info(f'指定されたエリア内に{ind_val}が見つかりませんでした。')
 else:
     places_1 = places_1.with_column('DISTANCE', call_function('ST_DISTANCE',
                                                              call_function('ST_MAKEPOINT', col('LON'), col('LAT')),
@@ -151,9 +151,9 @@ else:
     def get_cached_places(distance_val, bbox_val, ind_val_param):
         return places_1.to_pandas()
 
-    # Generate tooltip and second layer in pydeck for suggested distributors
+    # 推奨ディストリビューター用のツールチップとpydeckの第2レイヤーを生成
     tooltip = {
-        "html": """<b>Name:</b> {NAME} <b><br>Distance From Centre:</b> {DISTANCE}""",
+        "html": """<b>名前:</b> {NAME} <b><br>距離:</b> {DISTANCE}""",
         "style": {
             "width": "50%",
             "backgroundColor": "steelblue",
@@ -184,11 +184,11 @@ else:
         def get_warehouses_data(distance_val, bbox_val, ind_val_param):
             return places_1.group_by(col('NAME')).agg(avg('DISTANCE').alias('DISTANCE')).sort(col('DISTANCE').asc()).to_pandas()
 
-        st.caption(f'Suppliers within a {distance_input}km square area around {place_input}')
+        st.caption(f'{distance_input}kmの正方形エリア内の卸売業者')
         st.pydeck_chart(pdk.Deck(layers=[wholesalers_layer, context_layer], map_style=None, initial_view_state=view_state, tooltip=tooltip))
 
-        selected_warehouse = st.selectbox('Choose Wholesaler to distribute goods from:', get_warehouses_data(distance_input, bbox_data, ind_val))
-        selected_customer_types = st.multiselect('Choose The Type of Customer:', customer_types, customer_types[0])
+        selected_warehouse = st.selectbox('卸売業者を選択:', get_warehouses_data(distance_input, bbox_data, ind_val))
+        selected_customer_types = st.multiselect('顧客タイプを選択:', customer_types, customer_types[0])
         places_1 = places_1.filter(col('NAME') == selected_warehouse).limit(1)
 
     job_start_lon = places_1.select('LON').collect()[0][0]
@@ -204,14 +204,14 @@ else:
         col('PHONES').astype(StringType()).alias('PHONE_NUMBER')
     ).to_pandas()
 
-    st.markdown(f'<h1sub>Wholesaler - {warehouse_address.NAME.iloc[0]}</h1sub>', unsafe_allow_html=True)
-    st.markdown(f'**Address:** {warehouse_address.ADDRESS_1.iloc[0]}, {warehouse_address.LOCALITY.iloc[0]}, {warehouse_address.ZIP.iloc[0]}')
-    st.markdown(f'**Telephone:** {warehouse_address.PHONE_NUMBER.iloc[0]}')
+    st.markdown(f'<h1sub>卸売業者 - {warehouse_address.NAME.iloc[0]}</h1sub>', unsafe_allow_html=True)
+    st.markdown(f'**住所:** {warehouse_address.ADDRESS_1.iloc[0]}, {warehouse_address.LOCALITY.iloc[0]}, {warehouse_address.ZIP.iloc[0]}')
+    st.markdown(f'**電話番号:** {warehouse_address.PHONE_NUMBER.iloc[0]}')
 
     st.divider()
-    st.markdown('<h1sub>Vehicles that can deliver goods</h1sub>', unsafe_allow_html=True)
+    st.markdown('<h1sub>商品を配送できる車両</h1sub>', unsafe_allow_html=True)
 
-    # Vehicle setup
+    # 車両設定
     veh1_skills = [1]
     veh2_skills = [2]
     veh3_skills = [3]
@@ -220,15 +220,15 @@ else:
     veh2_capacity = [6]
     veh3_capacity = [12]
 
-    # Vehicle 1 configuration
-    st.markdown('<veh1>Vehicle 1</veh1>', unsafe_allow_html=True, help=f'''Vehicle 1 {skill_types[veh1_skills[0]-1]} and a capacity of {veh1_capacity[0]}''')
+    # 車両1の設定
+    st.markdown('<veh1>車両1</veh1>', unsafe_allow_html=True, help=f'''車両1 {skill_types[veh1_skills[0]-1]} , 容量 {veh1_capacity[0]}''')
     col1, col2, col3 = st.columns(3)
     with col1:
-        start_time_0 = st.number_input('Start Time in Hours:', 0, 24, 8, key=1)
+        start_time_0 = st.number_input('開始時間（時）:', 0, 24, 8, key=1)
     with col2:
-        end_time_0 = st.number_input('End Time in Hours:', start_time_0, 24, 17, key=2)
+        end_time_0 = st.number_input('終了時間（時）:', start_time_0, 24, 17, key=2)
     with col3:
-        smethod = st.selectbox('Choose Method:', methods, key=5)
+        smethod = st.selectbox('配送方法を選択:', methods, key=5)
 
     places_vehicles_df = places_1.filter(col('NAME') == selected_warehouse).cache_result()
 
@@ -244,15 +244,15 @@ else:
         ).alias('VEHICLE')
     )
 
-    # Vehicle 2 configuration
-    st.markdown('<veh2>Vehicle 2</veh2>', unsafe_allow_html=True, help=f'''Vehicle 2 {skill_types[veh2_skills[0]-1]} and a capacity of {veh2_capacity[0]}''')
+    # 車両2の設定
+    st.markdown('<veh2>車両2</veh2>', unsafe_allow_html=True, help=f'''車両2 {skill_types[veh2_skills[0]-1]}, 容量 {veh2_capacity[0]}''')
     col4, col5, col6 = st.columns(3)
     with col4:
-        start_time_1 = st.number_input('Start Time in Hours:', 0, 24, 8, key=3)
+        start_time_1 = st.number_input('開始時間（時）:', 0, 24, 8, key=3)
     with col5:
-        end_time_1 = st.number_input('End Time in Hours:', start_time_1, 24, 17, key=4)
+        end_time_1 = st.number_input('終了時間（時）:', start_time_1, 24, 17, key=4)
     with col6:
-        smethod_1 = st.selectbox('Choose Method:', methods, key=6)
+        smethod_1 = st.selectbox('配送方法を選択:', methods, key=6)
 
     vehicle_2 = places_vehicles_df.select(
         object_construct(
@@ -266,15 +266,15 @@ else:
         ).alias('VEHICLE')
     )
 
-    # Vehicle 3 configuration
-    st.markdown('<veh3>Vehicle 3</veh3>', unsafe_allow_html=True, help=f'''Vehicle 3 {skill_types[veh3_skills[0]-1]} and a capacity of {veh3_capacity[0]}''')
+    # 車両3の設定
+    st.markdown('<veh3>車両3</veh3>', unsafe_allow_html=True, help=f'''車両3 {skill_types[veh3_skills[0]-1]} , 容量 {veh3_capacity[0]}''')
     col7, col8, col9 = st.columns(3)
     with col7:
-        start_time_2 = st.number_input('Start Time in Hours:', 0, 24, 8, key=8)
+        start_time_2 = st.number_input('開始時間（時）:', 0, 24, 8, key=8)
     with col8:
-        end_time_2 = st.number_input('End Time in Hours:', start_time_1, 24, 17, key=9)
+        end_time_2 = st.number_input('終了時間（時）:', start_time_1, 24, 17, key=9)
     with col9:
-        smethod_2 = st.selectbox('Choose Method:', methods, key=10)
+        smethod_2 = st.selectbox('配送方法を選択:', methods, key=10)
 
     vehicle_3 = places_vehicles_df.select(
         object_construct(
@@ -288,12 +288,12 @@ else:
         ).alias('VEHICLE')
     )
 
-    # Add vehicle colors
+    # 車両カラーを追加
     vehicle_1 = vehicle_1.with_column('R', lit(125)).with_column('G', lit(68)).with_column('B', lit(207))
     vehicle_2 = vehicle_2.with_column('R', lit(212)).with_column('G', lit(91)).with_column('B', lit(144))
     vehicle_3 = vehicle_3.with_column('R', lit(255)).with_column('G', lit(159)).with_column('B', lit(54))
 
-    # Create vehicle DataFrame
+    # 車両データフレームを作成
     vehicles_details = vehicle_1.union(vehicle_2).union(vehicle_3).with_column('ID', col('VEHICLE')['id']) \
         .with_column('PROFILE', col('VEHICLE')['profile'].astype(StringType())) \
         .with_column('WINDOW', col('VEHICLE')['time_windows'].astype(StringType()))
@@ -303,14 +303,14 @@ else:
 
     start_coords = places_1.select('LON', 'LAT').collect()[0]
 
-    # Filter places based on customer type
+    # 顧客タイプに基づいて場所をフィルタリング
     places_customers = places_filtered.filter(expr(f'''search((CATEGORY,ALTERNATE,NAME),'{" ".join(selected_customer_types)}',analyzer=>'DEFAULT_ANALYZER')'''))
 
     with st.sidebar:
-        range_minutes_input = st.number_input('Order Acceptance catchment time:', 0, 120, 20)
-        based_on_method = st.selectbox('Based On:', methods)
+        range_minutes_input = st.number_input('注文受付エリア時間（分）:', 0, 120, 20)
+        based_on_method = st.selectbox('配送方法を選択:', methods)
 
-    # Calculate isochrone
+    # 等時線を計算
     isochrone_df = session.create_dataframe([{'LON': start_coords[0], 'LAT': start_coords[1], 'METHOD': based_on_method, 'RANGE_MINS': range_minutes_input}])
     isochrone_result = isochrone_df.select(call_function(f'{route_functions_option}.CORE.ISOCHRONES',
                                                        (col('METHOD'), col('LON'), col('LAT'), col('RANGE_MINS'))).alias('ISOCHRONE'))
@@ -319,7 +319,7 @@ else:
     isochrone_pandas = isochrone_geo.select('GEO').to_pandas()
     isochrone_pandas["coordinates"] = isochrone_pandas["GEO"].apply(lambda row: json.loads(row)["coordinates"])
 
-    # Pydeck layers for map
+    # マップ用のPydeckレイヤー
     point_mark_layer = pdk.Layer(
         "ScatterplotLayer",
         places_vehicles_df.to_pandas(),
@@ -347,14 +347,14 @@ else:
     )
 
     with st.sidebar:
-        st.caption('The Selected Supplier with isochrone for simulated jobs')
+        st.caption('選択された卸売業者と等時線')
         st.pydeck_chart(pdk.Deck(layers=[isochrone_layer, point_mark_layer], map_style=None, initial_view_state=map_view_state, tooltip=tooltip))
 
-    submit_button = st.button('GET JOB ROUTES')
+    submit_button = st.button('ジョブルートを取得')
 
     if submit_button:
         with st.container():
-            # Filter customers within isochrone and limit to available time slots
+            # 等時線内の顧客をフィルタリングし、利用可能な時間枠に制限
             places_customers_within_isochrone = places_customers.join(isochrone_geo, call_function('ST_WITHIN', places_customers['POINT'], isochrone_geo['GEO'])) \
                 .sample(0.5).limit(time_slots_union.count()).cache_result()
 
@@ -362,7 +362,7 @@ else:
             places_customers_within_isochrone = places_customers_within_isochrone.with_column('ID', row_number().over(window_spec))
             places_customers_within_isochrone = places_customers_within_isochrone.join(time_slots_union, 'ID')
 
-            # Prepare job details for display
+            # 表示用のジョブ詳細を準備
             places_2_table_display = places_customers_within_isochrone.select(
                 'ID',
                 col('PRODUCT').alias('"Product"'),
@@ -377,7 +377,7 @@ else:
                 col('PHONES').astype(StringType()).alias('"Phone Number"')
             )
 
-            # Prepare job data for optimization
+            # 最適化用のジョブデータを準備
             jobs_data = places_customers_within_isochrone.with_column('JOB', object_construct(
                 lit('id'), col('ID'),
                 lit('capacity'), lit([2]),
@@ -387,7 +387,7 @@ else:
             ))
             jobs_agg = jobs_data.select(array_agg('JOB').alias('JOB'))
 
-            # Perform optimization
+            # 最適化を実行
             optimization_result = jobs_agg.join(vehicles_agg).select(
                 'JOB', 'VEH',
                 call_function(f'{route_functions_option}.CORE.OPTIMIZATION', col('JOB'), col('VEH')).alias('OPTIMIZATION')
@@ -410,7 +410,7 @@ else:
                 col('VALUE')['duration'].alias('DURATION'),
                 col('VALUE')['steps'].alias('STEPS'),
                 col('VALUE')['location'][0].alias('LON'),
-                col('VALUE')['location'][1].alias('LAT') # Corrected: Use index 1 for LAT
+                col('VALUE')['location'][1].alias('LAT') # 修正：LATにはインデックス1を使用
             ).cache_result()
 
             optimization_steps = optimization_details.join_table_function('flatten', col('STEPS'))
@@ -435,7 +435,7 @@ else:
                 .agg(array_agg(col('LOCATION')).within_group(col('DURATION').asc()).alias('LINE'),
                      count('*').alias('TOTAL_JOBS')).with_column('TOTAL_JOBS', col('TOTAL_JOBS') - 2)
 
-            st.markdown('<h1sub>Job Details</h1sub>', unsafe_allow_html=True)
+            st.markdown('<h1sub>ジョブ詳細</h1sub>', unsafe_allow_html=True)
             job_details_df = optimization_steps.join(places_2_table_display, optimization_steps['JOB'] == places_2_table_display['ID']).drop('LOCATION', 'ID')
             job_details_df = job_details_df.join(vehicles_details, vehicles_details['ID'] == job_details_df['VEHICLE'])
 
@@ -489,7 +489,7 @@ else:
                                                                        lit('<b>Cumulate Duration:</b> '), col('"Cumulative Duration"').astype(StringType()))).drop('TIME', '"Agreed Time"', '"Cumulative Duration"').to_pandas()
             places_1_pandas = places_1.to_pandas()
 
-            # Pydeck layer for vehicle drops
+            # 車両配送地点用のPydeckレイヤー
             layer_end = pdk.Layer(
                 'ScatterplotLayer',
                 job_details_pandas,
@@ -506,7 +506,7 @@ else:
                 pickable=True
             )
 
-            # Pydeck layer for wholesaler location
+            # 卸売業者の場所用のPydeckレイヤー
             layer_start = pdk.Layer(
                 type='ScatterplotLayer',
                 data=places_1_pandas,
@@ -519,7 +519,7 @@ else:
                 pickable=True
             )
 
-            # Pydeck layer for journey paths
+            # 経路パス用のPydeckレイヤー
             vehicle_paths_layer = pdk.Layer(
                 type="PathLayer",
                 data=data_for_map,
@@ -531,12 +531,12 @@ else:
                 get_width=5
             )
 
-            # Altair Charts
+            # Altairチャート
             df_for_charts = optimized_route_line.join(total_time_per_vehicle, 'VEHICLE') \
                 .select('R', 'G', 'B', 'TOTAL_JOBS', 'VEHICLE', 'DURATION').to_pandas()
             df_for_charts['color'] = df_for_charts.apply(lambda row: f"#{row['R']:02x}{row['G']:02x}{row['B']:02x}", axis=1)
 
-            # Chart for Total Jobs by Vehicle
+            # 車両別総ジョブ数のチャート
             jobs_chart_bars = alt.Chart(df_for_charts).mark_bar().encode(
                 y=alt.Y('VEHICLE', axis=alt.Axis(grid=False)),
                 x=alt.X('TOTAL_JOBS', axis=alt.Axis(grid=False, labels=False, title=None)),
@@ -548,7 +548,7 @@ else:
             ).encode(text='TOTAL_JOBS', x=alt.X('TOTAL_JOBS', axis=alt.Axis(grid=False)))
             total_jobs_chart = alt.layer(jobs_chart_bars, jobs_chart_text).configure_view(strokeWidth=0)
 
-            # Chart for Total Duration in Minutes by Vehicle
+            # 車両別総所要時間（分）のチャート
             duration_chart_bars = alt.Chart(df_for_charts).mark_bar().encode(
                 y=alt.Y('VEHICLE', axis=alt.Axis(grid=False)),
                 x=alt.X('DURATION', axis=alt.Axis(grid=False, labels=False, title=None)),
@@ -563,7 +563,7 @@ else:
             st.divider()
 
             tooltip_map = {
-                "html": """<b>DETAILS</b><BR>{NAME}""",
+                "html": """<b>詳細</b><BR>{NAME}""",
                 "style": {
                     "width": "50%",
                     "backgroundColor": "steelblue",
@@ -572,21 +572,21 @@ else:
                 }
             }
 
-            tab1, tab2, tab3, tab4 = st.tabs(['Map', 'Vehicle 1', 'Vehicle2', 'Vehicle3'])
+            tab1, tab2, tab3, tab4 = st.tabs(['マップ', '車両1', '車両2', '車両3'])
 
             with tab1:
                 col_map_charts, col_map_display = st.columns(2)
                 with col_map_charts:
-                    st.markdown('<h1sub>TOTAL JOBS BY VEHICLE</h1sub>', unsafe_allow_html=True)
+                    st.markdown('<h1sub>車両別ジョブ数</h1sub>', unsafe_allow_html=True)
                     st.altair_chart(total_jobs_chart, use_container_width=True)
-                    st.markdown('<h1sub>TOTAL DURATION IN MINUTES BY VEHICLE</h1sub>', unsafe_allow_html=True)
+                    st.markdown('<h1sub>車両別総所要時間（分）</h1sub>', unsafe_allow_html=True)
                     st.altair_chart(total_duration_chart, use_container_width=True)
                 with col_map_display:
-                    st.markdown('<h1sub>MAP OF THE ROUTE WITHIN THE ALLOWED CATCHMENT</h1sub>', unsafe_allow_html=True)
+                    st.markdown('<h1sub>許容範囲内のルートのマップ</h1sub>', unsafe_allow_html=True)
                     st.pydeck_chart(pdk.Deck(layers=[isochrone_layer, vehicle_paths_layer, layer_start, layer_end],
                                              map_style=None, initial_view_state=map_view_state, height=900, tooltip=tooltip_map))
 
-            # Directions for each vehicle
+            # 各車両の方向案内
             directions_df = optimization_lines_final.select('VEHICLE', col('DIRECTIONS')['features'][0]['properties']['segments'].alias('SEGMENTS'))
             directions_df = directions_df.join_table_function('flatten', col('SEGMENTS')).select('VEHICLE', col('VALUE').alias('SEGMENT'))
             directions_df = directions_df.select(
@@ -605,7 +605,7 @@ else:
             ).sort('"Vehicle"', 'SEQ', col('"Duration"').desc()).cache_result()
 
             def display_vehicle_journey(dataframe_for_map, dataframe_for_drops, vehicle_id, start_layer, view_state):
-                """Helper function to display vehicle-specific map and instructions."""
+                """車両固有のマップと指示を表示するヘルパー関数。"""
                 vehicle_path_layer = pdk.Layer(
                     type="PathLayer",
                     data=dataframe_for_map[dataframe_for_map['VEHICLE'] == vehicle_id],
@@ -643,13 +643,13 @@ else:
                     st.dataframe(vehicle_directions.filter(col('SEQ') == segment_seq).drop('SEQ'))
 
             with tab2:
-                st.markdown('<h1sub>Vehicle 1 Journey</h1sub>', unsafe_allow_html=True)
+                st.markdown('<h1sub>車両1の経路</h1sub>', unsafe_allow_html=True)
                 display_vehicle_journey(data_for_map, job_details_pandas, '1', layer_start, map_view_state)
 
             with tab3:
-                st.markdown('<h1sub>Vehicle 2 Journey</h1sub>', unsafe_allow_html=True)
+                st.markdown('<h1sub>車両2の経路</h1sub>', unsafe_allow_html=True)
                 display_vehicle_journey(data_for_map, job_details_pandas, '2', layer_start, map_view_state)
 
             with tab4:
-                st.markdown('<h1sub>Vehicle 3 Journey</h1sub>', unsafe_allow_html=True)
+                st.markdown('<h1sub>車両3の経路</h1sub>', unsafe_allow_html=True)
                 display_vehicle_journey(data_for_map, job_details_pandas, '3', layer_start, map_view_state)

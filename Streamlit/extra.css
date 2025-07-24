@@ -1,0 +1,39 @@
+/* Main app styling*/
+.stApp{  
+    background-color: #FFFFFF;  
+    color:#29b4e8;  
+    text-decoration-color: #24323D;
+}  
+
+h0black{
+    color: #000000;
+    font-size: 24px;
+    font-weight: bold;
+}
+h0blue{
+    color: #29b4e8;
+    font-size: 24px;
+    font-weight: bold;
+}
+h1grey{
+    color: #24323D;
+    font-size: 16px;
+    font-weight: bold;
+}
+h1sub{
+    color: #24323D;
+    font-size: 16px;
+    font-weight: bold;
+}
+veh1{
+    color: #24323D;
+    font-size: 12px;
+}
+veh2{
+    color: #24323D;
+    font-size: 12px;
+}
+veh3{
+    color: #24323D;
+    font-size: 12px;
+}
