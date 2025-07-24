@@ -3,3 +3,6 @@
 
 # Ignore the 'output' folder
 /native_app_setup/native_app/output
+
+# Ignore pdf files
+*.pdf
