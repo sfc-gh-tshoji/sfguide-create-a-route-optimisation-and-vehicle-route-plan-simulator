@@ -6,3 +6,8 @@
 
 # Ignore pdf files
 *.pdf
+
+# Ignore large OSM files
+*.osm.pbf
+Native_app_setup/native_app/provider_setup/staged_files/NewYork.osm.pbf
+Native_app_setup/native_app/provider_setup/staged_files/SanFrancisco.osm.pbf
